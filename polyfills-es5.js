@@ -1,4 +1,4 @@
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o) { if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) { var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var it, normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -14929,16 +14929,6 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
           }
 
           _createClass(Zone, [{
-            key: "parent",
-            get: function get() {
-              return this._parent;
-            }
-          }, {
-            key: "name",
-            get: function get() {
-              return this._name;
-            }
-          }, {
             key: "get",
             value: function get(key) {
               var zone = this.getZoneWith(key);
@@ -15171,11 +15161,36 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
                 zoneDelegates[i]._updateTaskCount(task.type, count);
               }
             }
+          }, {
+            key: "parent",
+            get: function get() {
+              return this._parent;
+            }
+          }, {
+            key: "name",
+            get: function get() {
+              return this._name;
+            }
           }], [{
             key: "assertZonePatched",
             value: function assertZonePatched() {
               if (global['Promise'] !== patches['ZoneAwarePromise']) {
                 throw new Error('Zone.js has detected that ZoneAwarePromise `(window|global).Promise` ' + 'has been overwritten.\n' + 'Most likely cause is that a Promise polyfill has been loaded ' + 'after Zone.js (Polyfilling Promise api is not necessary when zone.js is loaded. ' + 'If you must load one, do so before loading zone.js.)');
+              }
+            }
+          }, {
+            key: "__load_patch",
+            // tslint:disable-next-line:require-internal-with-underscore
+            value: function __load_patch(name, fn) {
+              if (patches.hasOwnProperty(name)) {
+                if (checkDuplicate) {
+                  throw Error('Already loaded patch: ' + name);
+                }
+              } else if (!global['__Zone_disable_' + name]) {
+                var perfName = 'Zone:' + name;
+                mark(perfName);
+                patches[name] = fn(global, Zone, _api);
+                performanceMeasure(perfName, perfName);
               }
             }
           }, {
@@ -15198,21 +15213,6 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
             key: "currentTask",
             get: function get() {
               return _currentTask;
-            } // tslint:disable-next-line:require-internal-with-underscore
-
-          }, {
-            key: "__load_patch",
-            value: function __load_patch(name, fn) {
-              if (patches.hasOwnProperty(name)) {
-                if (checkDuplicate) {
-                  throw Error('Already loaded patch: ' + name);
-                }
-              } else if (!global['__Zone_disable_' + name]) {
-                var perfName = 'Zone:' + name;
-                mark(perfName);
-                patches[name] = fn(global, Zone, _api);
-                performanceMeasure(perfName, perfName);
-              }
             }
           }]);
 
@@ -15448,16 +15448,6 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
           }
 
           _createClass(ZoneTask, [{
-            key: "zone",
-            get: function get() {
-              return this._zone;
-            }
-          }, {
-            key: "state",
-            get: function get() {
-              return this._state;
-            }
-          }, {
             key: "cancelScheduleRequest",
             value: function cancelScheduleRequest() {
               this._transitionTo(notScheduled, scheduling);
@@ -15497,6 +15487,16 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
                 zone: this.zone.name,
                 runCount: this.runCount
               };
+            }
+          }, {
+            key: "zone",
+            get: function get() {
+              return this._zone;
+            }
+          }, {
+            key: "state",
+            get: function get() {
+              return this._state;
             }
           }], [{
             key: "invokeTask",
@@ -15997,82 +15997,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
         var ZoneAwarePromise =
         /*#__PURE__*/
         function () {
-          function ZoneAwarePromise(executor) {
-            _classCallCheck(this, ZoneAwarePromise);
-
-            var promise = this;
-
-            if (!(promise instanceof ZoneAwarePromise)) {
-              throw new Error('Must be an instanceof Promise.');
-            }
-
-            promise[symbolState] = UNRESOLVED;
-            promise[symbolValue] = []; // queue;
-
-            try {
-              executor && executor(makeResolver(promise, RESOLVED), makeResolver(promise, REJECTED));
-            } catch (error) {
-              resolvePromise(promise, false, error);
-            }
-          }
-
-          _createClass(ZoneAwarePromise, [{
-            key: Symbol.toStringTag,
-            get: function get() {
-              return 'Promise';
-            }
-          }, {
-            key: Symbol.species,
-            get: function get() {
-              return ZoneAwarePromise;
-            }
-          }, {
-            key: "then",
-            value: function then(onFulfilled, onRejected) {
-              var C = this.constructor[Symbol.species];
-
-              if (!C || typeof C !== 'function') {
-                C = this.constructor || ZoneAwarePromise;
-              }
-
-              var chainPromise = new C(noop);
-              var zone = Zone.current;
-
-              if (this[symbolState] == UNRESOLVED) {
-                this[symbolValue].push(zone, chainPromise, onFulfilled, onRejected);
-              } else {
-                scheduleResolveOrReject(this, zone, chainPromise, onFulfilled, onRejected);
-              }
-
-              return chainPromise;
-            }
-          }, {
-            key: "catch",
-            value: function _catch(onRejected) {
-              return this.then(null, onRejected);
-            }
-          }, {
-            key: "finally",
-            value: function _finally(onFinally) {
-              var C = this.constructor[Symbol.species];
-
-              if (!C || typeof C !== 'function') {
-                C = ZoneAwarePromise;
-              }
-
-              var chainPromise = new C(noop);
-              chainPromise[symbolFinally] = symbolFinally;
-              var zone = Zone.current;
-
-              if (this[symbolState] == UNRESOLVED) {
-                this[symbolValue].push(zone, chainPromise, onFinally, onFinally);
-              } else {
-                scheduleResolveOrReject(this, zone, chainPromise, onFinally, onFinally);
-              }
-
-              return chainPromise;
-            }
-          }], [{
+          _createClass(ZoneAwarePromise, null, [{
             key: "toString",
             value: function toString() {
               return ZONE_AWARE_PROMISE_TO_STRING;
@@ -16224,6 +16149,83 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
               }
 
               return promise;
+            }
+          }]);
+
+          function ZoneAwarePromise(executor) {
+            _classCallCheck(this, ZoneAwarePromise);
+
+            var promise = this;
+
+            if (!(promise instanceof ZoneAwarePromise)) {
+              throw new Error('Must be an instanceof Promise.');
+            }
+
+            promise[symbolState] = UNRESOLVED;
+            promise[symbolValue] = []; // queue;
+
+            try {
+              executor && executor(makeResolver(promise, RESOLVED), makeResolver(promise, REJECTED));
+            } catch (error) {
+              resolvePromise(promise, false, error);
+            }
+          }
+
+          _createClass(ZoneAwarePromise, [{
+            key: "then",
+            value: function then(onFulfilled, onRejected) {
+              var C = this.constructor[Symbol.species];
+
+              if (!C || typeof C !== 'function') {
+                C = this.constructor || ZoneAwarePromise;
+              }
+
+              var chainPromise = new C(noop);
+              var zone = Zone.current;
+
+              if (this[symbolState] == UNRESOLVED) {
+                this[symbolValue].push(zone, chainPromise, onFulfilled, onRejected);
+              } else {
+                scheduleResolveOrReject(this, zone, chainPromise, onFulfilled, onRejected);
+              }
+
+              return chainPromise;
+            }
+          }, {
+            key: "catch",
+            value: function _catch(onRejected) {
+              return this.then(null, onRejected);
+            }
+          }, {
+            key: "finally",
+            value: function _finally(onFinally) {
+              var C = this.constructor[Symbol.species];
+
+              if (!C || typeof C !== 'function') {
+                C = ZoneAwarePromise;
+              }
+
+              var chainPromise = new C(noop);
+              chainPromise[symbolFinally] = symbolFinally;
+              var zone = Zone.current;
+
+              if (this[symbolState] == UNRESOLVED) {
+                this[symbolValue].push(zone, chainPromise, onFinally, onFinally);
+              } else {
+                scheduleResolveOrReject(this, zone, chainPromise, onFinally, onFinally);
+              }
+
+              return chainPromise;
+            }
+          }, {
+            key: Symbol.toStringTag,
+            get: function get() {
+              return 'Promise';
+            }
+          }, {
+            key: Symbol.species,
+            get: function get() {
+              return ZoneAwarePromise;
             }
           }]);
 
@@ -19035,7 +19037,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
      * will put import in the top of bundle, so user need to create a separate file
      * in this directory (for example: zone-flags.ts), and put the following flags
      * into that file, and then add the following code before importing zone.js.
-     * import './zone-flags';
+     * import './zone-flags.ts';
      *
      * The flags allowed in zone-flags.ts are listed here.
      *
@@ -19076,7 +19078,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
   /***/
   function _(module, exports, __webpack_require__) {
     __webpack_require__(
-    /*! /home/innobot-linux-user-5/testapp/node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/es5-polyfills.js */
+    /*! /home/innobot-linux-user-5/firebase-authentication-with-angular-9-master/node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/es5-polyfills.js */
     "./node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/es5-polyfills.js");
 
     __webpack_require__(
@@ -19084,7 +19086,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
     "./node_modules/zone.js/dist/zone-legacy.js");
 
     module.exports = __webpack_require__(
-    /*! /home/innobot-linux-user-5/testapp/src/polyfills.ts */
+    /*! /home/innobot-linux-user-5/firebase-authentication-with-angular-9-master/src/polyfills.ts */
     "./src/polyfills.ts");
     /***/
   }

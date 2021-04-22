@@ -2999,7 +2999,7 @@ __webpack_require__.r(__webpack_exports__);
  * will put import in the top of bundle, so user need to create a separate file
  * in this directory (for example: zone-flags.ts), and put the following flags
  * into that file, and then add the following code before importing zone.js.
- * import './zone-flags';
+ * import './zone-flags.ts';
  *
  * The flags allowed in zone-flags.ts are listed here.
  *
@@ -3033,7 +3033,7 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /home/innobot-linux-user-5/testapp/src/polyfills.ts */"./src/polyfills.ts");
+module.exports = __webpack_require__(/*! /home/innobot-linux-user-5/firebase-authentication-with-angular-9-master/src/polyfills.ts */"./src/polyfills.ts");
 
 
 /***/ })
